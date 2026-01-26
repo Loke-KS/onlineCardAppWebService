@@ -16,6 +16,29 @@ const dbConfig = {
     queueLimit: 0,
 };
 
+const cors = require("cors");
+const allowedOrigins = [
+    "http://localhost:3000",
+// "https://YOUR-frontend.vercel.app", // add later
+// "https://YOUR-frontend.onrender.com" // add later
+];
+app.use(
+    cors({
+        origin: function (origin, callback) {
+// allow requests with no origin (Postman/server-to-server)
+            if (!origin) return callback(null, true);
+            if (allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
+            return callback(new Error("Not allowed by CORS"));
+        },
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+        credentials: false,
+    })
+);
+
+
 // Initialize Express app
 const app = express();
 // Helps app to read JSON
@@ -37,6 +60,25 @@ app.get('/allcards', async (req,res) => {
         res.status(500).json({ message: 'Server error for all cards' });
     }
 });
+
+const DEMO_USER = { id: 1, username: "admin", password: "admin123" };
+
+const jwt = require("jsonwebtoken");
+const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_change_me";
+
+app.post("/login", async (req, res) => {
+    const { username, password } = req.body;
+    if (username !== DEMO_USER.username || password !== DEMO_USER.password) {
+        return res.status(401).json({ error: "Invalid credentials" });
+    }
+    const token = jwt.sign(
+        { userId: DEMO_USER.id, username: DEMO_USER.username },
+        JWT_SECRET,
+        { expiresIn: "1h" }
+    );
+    res.json({ token });
+});
+
 
 // Example Route: Create a new card
 app.post('/addcard', async (req, res) => {
