@@ -22,8 +22,7 @@ const app = express();
 const cors = require("cors");
 const allowedOrigins = [
     "http://localhost:3000",
-// "https://YOUR-frontend.vercel.app", // add later
-// "https://YOUR-frontend.onrender.com" // add later
+    "https://onlinecardappwebservice-2ruf.onrender.com"
 ];
 app.use(
     cors({
@@ -79,6 +78,26 @@ app.post("/login", async (req, res) => {
     res.json({ token });
 });
 
+function requireAuth(req, res, next) {
+    const header = req.headers.authorization; // "Bearer <token>"
+
+    if (!header) {
+        return res.status(401).json({ error: "Missing Authorization header" });
+    }
+
+    const [type, token] = header.split(" ");
+
+    if (type !== "Bearer" || !token) {
+        return res.status(401).json({ error: "Invalid Authorization format" });
+    }
+    try {
+        const payload = jwt.verify(token, JWT_SECRET);
+        req.user = payload;
+        next();
+    } catch {
+        return res.status(401).json({ error: "Invalid/Expired token" });
+    }
+}
 
 // Example Route: Create a new card
 app.post('/addcard', async (req, res) => {
