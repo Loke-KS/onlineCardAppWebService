@@ -16,6 +16,9 @@ const dbConfig = {
     queueLimit: 0,
 };
 
+// Initialize Express app
+const app = express();
+
 const cors = require("cors");
 const allowedOrigins = [
     "http://localhost:3000",
@@ -38,9 +41,6 @@ app.use(
     })
 );
 
-
-// Initialize Express app
-const app = express();
 // Helps app to read JSON
 app.use(express.json());
 
